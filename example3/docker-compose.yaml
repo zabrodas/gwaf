@@ -1,0 +1,32 @@
+version: "3.7"
+services:
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    networks:
+      - envoymesh
+    expose:
+      - "8123"
+    ports:
+      - "8123:5050"
+      
+  envoy:
+    build:
+      context: .
+      dockerfile: Dockerfile.envoy
+    volumes:
+      - ./envoy.yaml:/etc/envoy.yaml
+      - ./logs:/logs
+    networks:
+      - envoymesh
+    expose:
+      - "8888"
+      - "1337"
+    ports:
+      - "8888:8888"
+      - "1337:1337"
+
+networks:
+  envoymesh: {}

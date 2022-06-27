@@ -1,0 +1,10 @@
+FROM envoyproxy/envoy-dev:latest
+#FROM envoyproxy/envoy:v1.21.4
+
+RUN apt-get update
+RUN apt-get install -y net-tools iputils-ping
+
+#ADD envoy.yaml /etc/
+#CMD /usr/local/bin/envoy -c /etc/envoy.yaml -l debug --service-cluster proxy --log-path /logs/envoy.log
+
+CMD /usr/local/bin/envoy -c /etc/envoy.yaml -l debug --service-cluster proxy
