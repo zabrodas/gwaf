@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	cc, err := grpc.Dial("host.docker.internal:8123", grpc.WithInsecure())
+	cc, err := grpc.Dial("host.docker.internal:1337", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
 	}

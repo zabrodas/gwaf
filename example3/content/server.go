@@ -17,8 +17,15 @@ type server struct {
 
 func (*server) Hello(ctx context.Context, request *pb.HelloRequest) (*pb.HelloResponse, error) {
 	name := request.Name
-    fmt.Printf("Server received hello from %v ...\n", name)
+    fmt.Printf("Server received Hello from %v ...\n", name)
 	response := &pb.HelloResponse{Greeting: "Hello " + name}
+	return response, nil
+}
+
+func (*server) HelloNoAuth(ctx context.Context, request *pb.HelloRequest) (*pb.HelloResponse, error) {
+	name := request.Name
+    fmt.Printf("Server received HelloNoAuth from %v...\n", name)
+	response := &pb.HelloResponse{Greeting: "HelloNoAuth " + name}
 	return response, nil
 }
 

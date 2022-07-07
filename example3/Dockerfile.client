@@ -15,19 +15,18 @@ RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 ENV PATH="$PATH:/root/go/bin/"
 
-
-COPY content /server
-WORKDIR /server
+COPY content /client
+WORKDIR /client
 
 RUN go get google.golang.org/grpc
 
 RUN protoc --go_out=. --go-grpc_out=. hello.proto
 RUN cp hello.proto protos/
-RUN go build -o serverexec server.go
+RUN go build -o clientexec client.go
 
-CMD ["sh","/server/start_serverexec.sh"]
+CMD ["sh","/client/start_clientexec.sh"]
 
 #FROM alpine:latest
 #WORKDIR /root/
-#COPY --from=builder /server/serverexec .
-#CMD ["./serverexec"]
+#COPY --from=builder /client/clientexec .
+#CMD ["./clientexec"]

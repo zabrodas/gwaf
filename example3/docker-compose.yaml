@@ -11,6 +11,13 @@ services:
       - "8123"
     ports:
       - "8123:5050"
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    networks:
+      - envoymesh
       
   envoy:
     build:
