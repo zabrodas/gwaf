@@ -11,6 +11,17 @@ static_resources:
       socket_address: { address: 0.0.0.0, port_value: 1337 }
     filter_chains:
     - filters:
+
+#      - name: envoy.filters.network.ext_authz
+#        typed_config:
+#          "@type": type.googleapis.com/envoy.extensions.filters.network.ext_authz.v3.ExtAuthz
+#          stat_prefix: ext_authz
+#          transport_api_version: V3
+#          grpc_service:
+#            envoy_grpc:
+#              cluster_name: ext-authz
+##          include_peer_certificate: true
+
       - name: envoy.filters.network.http_connection_manager
         typed_config:
           "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
@@ -38,6 +49,18 @@ static_resources:
           http_filters:
           - name: envoy.filters.http.grpc_web
           - name: envoy.filters.http.cors
+
+
+          - name: envoy.filters.network.ext_authz
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+              stat_prefix: ext_authz
+              transport_api_version: V3
+              grpc_service:
+                envoy_grpc:
+                  cluster_name: ext-authz
+
+
           - name: envoy.filters.http.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -60,13 +83,23 @@ static_resources:
                     address: host.docker.internal
                     port_value: 8123
     dns_lookup_family: V4_ONLY
-#    transport_socket:
-#      name: envoy.transport_sockets.tls
-#      typed_config:
-#        "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-#        common_tls_context:
-#          alpn_protocols: h2
-#          validation_context:
-#            trusted_ca:
-#              filename: /etc/ssl/certs/ca-certificates.crt
-#        sni: YOUR_GRPC_APP_URL.a.run.app
+
+  - name: ext-authz
+    type: STRICT_DNS
+    lb_policy: round_robin
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        explicit_http_config:
+          http2_protocol_options: {}
+    load_assignment:
+      cluster_name: ext-authz
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: host.docker.internal # extauth
+                port_value: 4040
+    dns_lookup_family: V4_ONLY
+ 

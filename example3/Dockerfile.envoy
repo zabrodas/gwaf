@@ -1,6 +1,7 @@
 #FROM envoyproxy/envoy-dev:latest
-#FROM envoyproxy/envoy:v1.21.4
-FROM envoyproxy/envoy-alpine:v1.17.0
+FROM envoyproxy/envoy:v1.21.4
+#FROM envoyproxy/envoy:v1.23.4
+#FROM envoyproxy/envoy-alpine:v1.17.0
 
 RUN apt-get update
 RUN apt-get install -y net-tools iputils-ping

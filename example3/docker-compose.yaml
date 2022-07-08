@@ -18,6 +18,18 @@ services:
       dockerfile: Dockerfile.client
     networks:
       - envoymesh
+
+  extauth:
+    build:
+      context: .
+      dockerfile: Dockerfile.extauth
+    networks:
+      - envoymesh
+    expose:
+      - "4040"
+    ports:
+      - "4040:4040"
+
       
   envoy:
     build:

@@ -16,7 +16,7 @@ RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 ENV PATH="$PATH:/root/go/bin/"
 
 
-COPY content /server
+COPY client-server /server
 WORKDIR /server
 
 RUN go get google.golang.org/grpc

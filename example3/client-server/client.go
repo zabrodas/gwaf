@@ -23,6 +23,7 @@ func main() {
 	request := &pb.HelloRequest{Name: "brian"}
 
 	ctx := metadata.AppendToOutgoingContext(context.Background(), "Authorization", "Bearer foo", "Bar", "baz")
+	ctx = metadata.AppendToOutgoingContext(ctx, "X-AZ-TEST", "TTTTTTT")
 
 	resp, err := client.Hello(ctx, request)
 	if err != nil {

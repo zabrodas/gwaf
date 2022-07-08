@@ -1,0 +1,20 @@
+FROM golang:latest as builder
+
+RUN apt-get update
+RUN apt-get install -y net-tools unzip iputils-ping
+
+
+ENV PATH="$PATH:/root/go/bin/"
+
+COPY extauth /extauth
+WORKDIR /extauth
+
+#RUN go get google.golang.org/grpc
+#RUN go mod download github.com/envoyproxy/go-control-plane
+#RUN go get github.com/gogo/googleapis/google/rpc 
+RUN go mod tidy
+
+RUN go build -o extauthexec extauth.go
+
+CMD ["sh","/extauth/start_extauthexec.sh"]
+
