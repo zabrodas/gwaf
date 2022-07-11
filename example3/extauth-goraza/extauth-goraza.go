@@ -6,7 +6,7 @@ import(
   "net"
 //  "strings"
 
-  core "github.com/cilium/proxy/go/envoy/config/core/v3"
+//  core "github.com/cilium/proxy/go/envoy/config/core/v3"
   auth "github.com/cilium/proxy/go/envoy/service/auth/v3"
   envoy_type "github.com/cilium/proxy/go/envoy/type/v3"
 
@@ -21,7 +21,7 @@ import(
 
 var waf *coraza.Waf
 
-func checkRequest(ctx context.Context, req *auth.CheckRequest) bool {
+func checkRequest(ctx context.Context, req *auth.CheckRequest) (bool,int,string) {
 
     tx := waf.NewTransaction()
     defer func(){
@@ -49,15 +49,17 @@ func checkRequest(ctx context.Context, req *auth.CheckRequest) bool {
     
     for hn,hv := range headers {
         tx.AddRequestHeader(hn, hv)
+        fmt.Printf("Add header %v=%v\n",hn,hv);
     }
 
-    if it := tx.ProcessRequestHeaders(); it != nil {
-        fmt.Printf("Transaction was interrupted with status %d\n", it.Status)
-        return false
+    it := tx.ProcessRequestHeaders()
+    if it != nil {
+        fmt.Printf("Transaction was interrupted with status Status=%d RuleID=%d\n", it.Status, it.RuleID)
+        return false,it.Status, fmt.Sprintf("Not authorized due to RuleId=%v",it.RuleID)
     }
     
     fmt.Printf("Transaction was completed\n")
-    return true
+    return true,200,"OK"
 }
 
 
@@ -67,7 +69,7 @@ func (a *authorizationServer) Check(ctx context.Context, req *auth.CheckRequest)
 
   fmt.Printf("authorizationServer req=%v",req)
 
-  ok := checkRequest(ctx, req)
+  ok, httpCode, httpMsg := checkRequest(ctx, req)
 
   if ok {
 
@@ -77,14 +79,14 @@ func (a *authorizationServer) Check(ctx context.Context, req *auth.CheckRequest)
         },
         HttpResponse: &auth.CheckResponse_OkResponse{
           OkResponse: &auth.OkHttpResponse{
-            Headers: []*core.HeaderValueOption{
-              {
-                Header: &core.HeaderValue{
-                  Key:   "my-credential-header",
-                  Value: "permission6,permission9",
-                },
-              },
-            },
+//            Headers: []*core.HeaderValueOption{
+//              {
+//                Header: &core.HeaderValue{
+//                  Key:   "my-credential-header",
+//                  Value: "permission6,permission9",
+//                },
+//              },
+//            },
           },
         },
       }, nil
@@ -97,8 +99,8 @@ func (a *authorizationServer) Check(ctx context.Context, req *auth.CheckRequest)
         },
         HttpResponse: &auth.CheckResponse_DeniedResponse{
           DeniedResponse: &auth.DeniedHttpResponse{
-            Status: &envoy_type.HttpStatus{Code: 401},
-            Body:   "Not authorized",
+            Status: &envoy_type.HttpStatus{Code: envoy_type.StatusCode(httpCode)},
+            Body:   httpMsg,
           },
         },
       }, nil
