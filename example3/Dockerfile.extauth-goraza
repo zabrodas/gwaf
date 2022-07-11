@@ -1,0 +1,20 @@
+FROM golang:latest as builder
+
+RUN apt-get update
+RUN apt-get install -y net-tools unzip iputils-ping
+
+
+ENV PATH="$PATH:/root/go/bin/"
+
+COPY extauth-goraza/preload.go /extauth-goraza/preload.go
+COPY extauth-goraza/go.mod /extauth-goraza/go.mod
+WORKDIR /extauth-goraza
+RUN go mod tidy
+
+COPY extauth-goraza /extauth-goraza
+RUN go mod tidy
+
+RUN go build -o extauth-gorazaexec extauth-goraza.go
+
+CMD ["sh","/extauth-goraza/start_extauthexec.sh"]
+

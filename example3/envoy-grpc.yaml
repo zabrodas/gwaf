@@ -61,7 +61,7 @@ static_resources:
 
 # switch between simple authorization server and goraza-authorization server
 #                  cluster_name: ext-authz
-                  cluster_name: ext-authz-goraza
+                  cluster_name: ext-authz
 
 
           - name: envoy.filters.http.router

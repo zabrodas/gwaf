@@ -47,9 +47,6 @@ static_resources:
                 max_age: "1728000"
                 expose_headers: custom-header-1,grpc-status,grpc-message
           http_filters:
-          - name: envoy.filters.http.grpc_web
-          - name: envoy.filters.http.cors
-
 
           - name: envoy.filters.network.ext_authz
             typed_config:
@@ -59,9 +56,9 @@ static_resources:
               grpc_service:
                 envoy_grpc:
 
-# switch between simple authorization server and goraza-authorization server
-#                  cluster_name: ext-authz
-                  cluster_name: ext-authz-goraza
+## switch between simple authorization server and goraza-authorization server
+                  cluster_name: ext-authz
+#                  cluster_name: ext-authz-goraza
 
 
           - name: envoy.filters.http.router
@@ -70,10 +67,11 @@ static_resources:
 
 
   clusters:
+
   - name: backend
     type: strict_dns
     connect_timeout: 20s
-    http2_protocol_options: {}
+#    http2_protocol_options: {}
     lb_policy: round_robin
     dns_refresh_rate: 90s
     load_assignment:
@@ -83,8 +81,8 @@ static_resources:
             - endpoint:
                 address:
                   socket_address:
-                    address: host.docker.internal
-                    port_value: 8123
+                    address: andrey-zabrodin.net
+                    port_value: 80
     dns_lookup_family: V4_ONLY
 
   - name: ext-authz
@@ -105,23 +103,24 @@ static_resources:
                 address: host.docker.internal # extauth
                 port_value: 4040
     dns_lookup_family: V4_ONLY
- 
-  - name: ext-authz-goraza
-    type: STRICT_DNS
-    lb_policy: round_robin
-    typed_extension_protocol_options:
-      envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
-        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-        explicit_http_config:
-          http2_protocol_options: {}
-    load_assignment:
-      cluster_name: ext-authz
-      endpoints:
-      - lb_endpoints:
-        - endpoint:
-            address:
-              socket_address:
-                address: host.docker.internal # extauth
-                port_value: 4041
-    dns_lookup_family: V4_ONLY
+
+
+#  - name: ext-authz-goraza
+#    type: STRICT_DNS
+#    lb_policy: round_robin
+#    typed_extension_protocol_options:
+#      envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+#        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+#        explicit_http_config:
+#          http2_protocol_options: {}
+#    load_assignment:
+#      cluster_name: ext-authz-goraza
+#      endpoints:
+#      - lb_endpoints:
+#        - endpoint:
+#            address:
+#              socket_address:
+#                address: host.docker.internal # extauth
+#               port_value: 4040
+#    dns_lookup_family: V4_ONLY
 

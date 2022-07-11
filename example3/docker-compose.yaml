@@ -11,6 +11,9 @@ services:
       - "8123"
     ports:
       - "8123:5050"
+    deploy:
+      mode: replicated
+      replicas: ${NUM_SERVER_REPLICAS}
 
   client:
     build:
@@ -18,6 +21,9 @@ services:
       dockerfile: Dockerfile.client
     networks:
       - envoymesh
+    deploy:
+      mode: replicated
+      replicas: ${NUM_CLIENT_REPLICAS}
 
   extauth:
     build:
@@ -29,14 +35,32 @@ services:
       - "4040"
     ports:
       - "4040:4040"
+    deploy:
+      mode: replicated
+      replicas: ${NUM_AUTH_REPLICAS}
 
+  extauth-goraza:
+    build:
+      context: .
+      dockerfile: Dockerfile.extauth-goraza
+    networks:
+      - envoymesh
+    expose:
+      - "4041"
+    ports:
+      - "4041:4041"
+    volumes:
+      - ./goraza.conf:/goraza/goraza.conf
+    deploy:
+      mode: replicated
+      replicas: ${NUM_AUTH_GORAZA_REPLICAS}
       
   envoy:
     build:
       context: .
       dockerfile: Dockerfile.envoy
     volumes:
-      - ./envoy.yaml:/etc/envoy.yaml
+      - ${ENVOY_YAML}:/etc/envoy.yaml
       - ./logs:/logs
     networks:
       - envoymesh
