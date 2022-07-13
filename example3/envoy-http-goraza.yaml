@@ -55,11 +55,11 @@ static_resources:
               transport_api_version: V3
               grpc_service:
                 envoy_grpc:
-
-## switch between simple authorization server and goraza-authorization server
-#                  cluster_name: ext-authz
                   cluster_name: ext-authz-goraza
-
+              with_request_body:
+                max_request_bytes: 1024
+                allow_partial_message: true
+                pack_as_bytes: true
 
           - name: envoy.filters.http.router
             typed_config:

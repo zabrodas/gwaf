@@ -42,6 +42,7 @@ func checkRequest(ctx context.Context, req *auth.CheckRequest) (bool,int,string)
     method := http.GetMethod()
     path := http.GetPath()
     headers := http.GetHeaders()
+    rawBody := http.GetRawBody()
 
     tx.ProcessConnection(source.GetAddress(), int(source.GetPortValue()), destination.GetAddress(), int(destination.GetPortValue()))
     tx.ProcessURI(path, method, protocol)
@@ -52,10 +53,25 @@ func checkRequest(ctx context.Context, req *auth.CheckRequest) (bool,int,string)
         fmt.Printf("Add header %v=%v\n",hn,hv);
     }
 
-    it := tx.ProcessRequestHeaders()
-    if it != nil {
-        fmt.Printf("Transaction was interrupted with status Status=%d RuleID=%d\n", it.Status, it.RuleID)
-        return false,it.Status, fmt.Sprintf("Not authorized due to RuleId=%v",it.RuleID)
+    // phase 1 (Request Headers)
+    fmt.Printf("Process headers\n");
+    ith := tx.ProcessRequestHeaders()
+    if ith != nil {
+        fmt.Printf("Transaction was interrupted with status Status=%d RuleID=%d (phase 1)\n", ith.Status, ith.RuleID)
+        return false,ith.Status, fmt.Sprintf("Not authorized due to RuleId=%v (phase 1)",ith.RuleID)
+    }
+
+    // phase 2 (Request Body)
+    fmt.Printf("Process body\n");
+    tx.RequestBodyBuffer.Write([]byte(rawBody))
+    itb,errb := tx.ProcessRequestBody()
+    if itb != nil {
+        fmt.Printf("Transaction was interrupted with status Status=%d RuleID=%d (phase 2)\n", itb.Status, itb.RuleID)
+        return false,itb.Status, fmt.Sprintf("Not authorized due to RuleId=%v (phase 2)",itb.RuleID)
+    }
+    if errb != nil {
+        fmt.Printf("Transaction was interrupted Error=%v (phase 2)\n", errb )
+        return false,500, fmt.Sprintf("Not authorized Error=%v (phase 2)",errb)
     }
     
     fmt.Printf("Transaction was completed\n")
